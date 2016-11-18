@@ -1,0 +1,36 @@
+{
+  "name": "repan-rezoom",
+  "version": "0.1.0",
+  "description": "TODO",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "rimraf lib && babel src -d lib",
+    "examples": "webpack-dev-server --config webpack.config.development.babel.js --content-base dist/ --hot --inline --host 0.0.0.0",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/woutervh-/repan-rezoom.git"
+  },
+  "author": "Wouter van Heeswijk",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/woutervh-/repan-rezoom/issues"
+  },
+  "homepage": "https://github.com/woutervh-/repan-rezoom#readme",
+  "dependencies": {
+    "react": "^15.4.0",
+    "react-dom": "^15.4.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-loader": "^6.2.7",
+    "babel-preset-es2015": "^6.18.0",
+    "babel-preset-react": "^6.16.0",
+    "babel-preset-stage-1": "^6.16.0",
+    "html-webpack-plugin": "^2.24.1",
+    "rimraf": "^2.5.4",
+    "webpack": "^1.13.3",
+    "webpack-dev-server": "^1.16.2"
+  }
+}
