@@ -28,28 +28,15 @@ export default WrappedComponent =>
 
         dx = 0;
         dy = 0;
-        lockPosition = false;
         ds = 0;
-        lockScale = false;
 
         componentWillReceiveProps(nextProps) {
-            if (this.props.x !== nextProps.x && this.props.y !== nextProps.y) {
+            if (this.props.x !== nextProps.x || this.props.y !== nextProps.y) {
                 this.dx = 0;
                 this.dy = 0;
-                this.lockPosition = true;
             }
             if (this.props.scale !== nextProps.scale) {
                 this.ds = 0;
-                this.lockScale = true;
-            }
-        }
-
-        componentDidUpdate() {
-            if (this.lockPosition) {
-                this.lockPosition = false;
-            }
-            if (this.lockScale) {
-                this.lockScale = false;
             }
         }
 
@@ -127,7 +114,7 @@ export default WrappedComponent =>
         };
 
         handleMouseMove = (event) => {
-            if (this.panning && !this.lockPosition) {
+            if (this.panning) {
                 const {x, y, scale, onPanMove} = this.props;
                 const {clientX, clientY} = event;
                 const {width, height} = this.element.getBoundingClientRect();
@@ -137,8 +124,8 @@ export default WrappedComponent =>
                 this.panLastY = clientY;
                 const sdx = dx / (width * (scale + this.ds));
                 const sdy = dy / (height * (scale + this.ds));
-                this.dx += sdx; // change to - when bug is fixed
-                this.dy += sdy;
+                this.dx -= sdx;
+                this.dy -= sdy;
 
                 if (onPanMove) {
                     onPanMove(x + this.dx, y + this.dy, event);
@@ -147,7 +134,7 @@ export default WrappedComponent =>
         };
 
         handleMouseUp = (event) => {
-            if (this.panning && !this.lockPosition) {
+            if (this.panning) {
                 const {x, y, scale, onPanEnd} = this.props;
                 const {clientX, clientY} = event;
                 const {width, height} = this.element.getBoundingClientRect();
@@ -157,8 +144,8 @@ export default WrappedComponent =>
                 this.panLastY = clientY;
                 const sdx = dx / (width * (scale + this.ds));
                 const sdy = dy / (height * (scale + this.ds));
-                this.dx += sdx; // change to - when bug is fixed
-                this.dy += sdy;
+                this.dx -= sdx;
+                this.dy -= sdy;
                 this.panning = false;
 
                 if (onPanEnd) {
@@ -167,21 +154,10 @@ export default WrappedComponent =>
             }
         };
 
-        getEventPosition(event) {
-            const {scale} = this.props;
-            const {clientX, clientY} = event;
-            const {top, left, width, height} = this.element.getBoundingClientRect();
-            const ex = clientX - left;
-            const ey = clientY - top;
-            const x = ex / (width * (scale + this.ds));
-            const y = ey / (height * (scale + this.ds));
-            return {x, y};
-        }
-
         render() {
             const {children, x, y, scale, scaleFactor, minScale, maxScale, onPanStart, onPanMove, onPanEnd, onZoom, onPanAndZoom, ...other} = this.props;
 
-            return <WrappedComponent x={x + this.dx} y={y + this.dy} scale={scale + this.ds} ref={ref => this.handleRef(ref)} {...other}>
+            return <WrappedComponent ref={ref => this.handleRef(ref)} {...other}>
                 {children}
             </WrappedComponent>;
         }
