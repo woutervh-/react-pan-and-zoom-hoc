@@ -154,6 +154,10 @@ export default WrappedComponent =>
             }
         };
 
+        getElement() {
+            return this.element;
+        }
+
         render() {
             const {children, x, y, scale, scaleFactor, minScale, maxScale, onPanStart, onPanMove, onPanEnd, onZoom, onPanAndZoom, ...other} = this.props;
 
