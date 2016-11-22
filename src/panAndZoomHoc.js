@@ -93,6 +93,8 @@ export default WrappedComponent =>
                     onPanAndZoom(x + this.dx, y + this.dy, scale + this.ds);
                 }
             }
+
+            event.preventDefault();
         };
 
         panning = false;
