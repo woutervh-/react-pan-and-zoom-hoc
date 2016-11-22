@@ -121,8 +121,6 @@ export default WrappedComponent =>
                     onPanStart(event);
                 }
             }
-
-            event.preventDefault();
         };
 
         handleMouseMove = (event) => {
