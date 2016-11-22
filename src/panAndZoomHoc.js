@@ -10,6 +10,8 @@ export default WrappedComponent =>
             scaleFactor: React.PropTypes.number,
             minScale: React.PropTypes.number,
             maxScale: React.PropTypes.number,
+            renderOnChange: React.PropTypes.bool,
+            passOnProps: React.PropTypes.bool,
             onPanStart: React.PropTypes.func,
             onPanMove: React.PropTypes.func,
             onPanEnd: React.PropTypes.func,
@@ -21,9 +23,11 @@ export default WrappedComponent =>
             x: 0.5,
             y: 0.5,
             scale: 1,
-            scaleFactor: 2,
+            scaleFactor: Math.sqrt(2),
             minScale: Number.EPSILON,
-            maxScale: Number.POSITIVE_INFINITY
+            maxScale: Number.POSITIVE_INFINITY,
+            renderOnChange: false,
+            passOnProps: false
         };
 
         dx = 0;
@@ -71,7 +75,7 @@ export default WrappedComponent =>
         }
 
         handleWheel = (event) => {
-            const {x, y, scale, onPanAndZoom, scaleFactor, minScale, maxScale} = this.props;
+            const {x, y, scale, onPanAndZoom, scaleFactor, minScale, maxScale, renderOnChange} = this.props;
             const {clientX, clientY, deltaY} = event;
             const newScale = deltaY < 0 ? Math.min((scale + this.ds) * scaleFactor, maxScale) : Math.max((scale + this.ds) / scaleFactor, minScale);
             const factor = newScale / (scale + this.ds);
@@ -90,7 +94,11 @@ export default WrappedComponent =>
                 this.ds = newScale - scale;
 
                 if (onPanAndZoom) {
-                    onPanAndZoom(x + this.dx, y + this.dy, scale + this.ds);
+                    onPanAndZoom(x + this.dx, y + this.dy, scale + this.ds, event);
+                }
+
+                if (renderOnChange) {
+                    this.forceUpdate();
                 }
             }
 
@@ -113,11 +121,13 @@ export default WrappedComponent =>
                     onPanStart(event);
                 }
             }
+
+            event.preventDefault();
         };
 
         handleMouseMove = (event) => {
             if (this.panning) {
-                const {x, y, scale, onPanMove} = this.props;
+                const {x, y, scale, onPanMove, renderOnChange} = this.props;
                 const {clientX, clientY} = event;
                 const {width, height} = this.element.getBoundingClientRect();
                 const dx = clientX - this.panLastX;
@@ -132,12 +142,16 @@ export default WrappedComponent =>
                 if (onPanMove) {
                     onPanMove(x + this.dx, y + this.dy, event);
                 }
+
+                if (renderOnChange) {
+                    this.forceUpdate();
+                }
             }
         };
 
         handleMouseUp = (event) => {
             if (this.panning) {
-                const {x, y, scale, onPanEnd} = this.props;
+                const {x, y, scale, onPanEnd, renderOnChange} = this.props;
                 const {clientX, clientY} = event;
                 const {width, height} = this.element.getBoundingClientRect();
                 const dx = clientX - this.panLastX;
@@ -153,6 +167,10 @@ export default WrappedComponent =>
                 if (onPanEnd) {
                     onPanEnd(x + this.dx, y + this.dy, event);
                 }
+
+                if (renderOnChange) {
+                    this.forceUpdate();
+                }
             }
         };
 
@@ -161,9 +179,10 @@ export default WrappedComponent =>
         }
 
         render() {
-            const {children, x, y, scale, scaleFactor, minScale, maxScale, onPanStart, onPanMove, onPanEnd, onZoom, onPanAndZoom, ...other} = this.props;
+            const {children, x, y, scale, scaleFactor, minScale, maxScale, onPanStart, onPanMove, onPanEnd, onZoom, onPanAndZoom, renderOnChange, passOnProps, ...other} = this.props;
+            const passedProps = passOnProps ? {x: x + this.dx, y: y + this.dy, scale: scale + this.ds} : {};
 
-            return <WrappedComponent ref={ref => this.handleRef(ref)} {...other}>
+            return <WrappedComponent ref={ref => this.handleRef(ref)} {...passedProps} {...other}>
                 {children}
             </WrappedComponent>;
         }
