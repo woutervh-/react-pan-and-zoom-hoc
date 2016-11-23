@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/woutervh-/repan-rezoom.git"
+    "url": "git+https://github.com/woutervh-/react-pan-and-zoom-hoc.git"
   },
   "author": "Wouter van Heeswijk",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/woutervh-/repan-rezoom/issues"
+    "url": "https://github.com/woutervh-/react-pan-and-zoom-hoc/issues"
   },
-  "homepage": "https://github.com/woutervh-/repan-rezoom#readme",
+  "homepage": "https://github.com/woutervh-/react-pan-and-zoom-hoc#readme",
   "dependencies": {
     "react": "^15.4.0",
     "react-dom": "^15.4.0"
