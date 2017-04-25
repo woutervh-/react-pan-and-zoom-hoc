@@ -57,11 +57,6 @@ export default WrappedComponent =>
                 this.element = ReactDOM.findDOMNode(ref);
                 this.element.addEventListener('wheel', this.handleWheel);
                 this.element.addEventListener('mousedown', this.handleMouseDown);
-            } else {
-                if (this.panning) {
-                    document.removeEventListener('mousemove', this.handleMouseMove);
-                    document.removeEventListener('mouseup', this.handleMouseUp);
-                }
             }
         }
 
@@ -129,7 +124,7 @@ export default WrappedComponent =>
         };
 
         handleMouseMove = (event) => {
-            if (this.panning) {
+            if (this.panning && this.element) {
                 const {x, y, scale, onPanMove, renderOnChange} = this.props;
                 const {clientX, clientY} = event;
                 const {width, height} = this.element.getBoundingClientRect();
@@ -153,7 +148,7 @@ export default WrappedComponent =>
         };
 
         handleMouseUp = (event) => {
-            if (this.panning) {
+            if (this.panning && this.element) {
                 const {x, y, scale, onPanEnd, renderOnChange} = this.props;
                 const {clientX, clientY} = event;
                 const {width, height} = this.element.getBoundingClientRect();
@@ -187,7 +182,7 @@ export default WrappedComponent =>
             const {children, x, y, scale, scaleFactor, minScale, maxScale, onPanStart, onPanMove, onPanEnd, onZoom, onPanAndZoom, renderOnChange, passOnProps, ...other} = this.props;
             const passedProps = passOnProps ? {x: x + this.dx, y: y + this.dy, scale: scale + this.ds} : {};
 
-            return <WrappedComponent ref={ref => this.handleRef(ref)} {...passedProps} {...other}>
+            return <WrappedComponent ref={(ref) => this.handleRef(ref)} {...passedProps} {...other}>
                 {children}
             </WrappedComponent>;
         }
