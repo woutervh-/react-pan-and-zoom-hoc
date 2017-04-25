@@ -2,7 +2,7 @@
   "name": "react-pan-and-zoom-hoc",
   "version": "1.0.1",
   "description": "React HOC that helps with panning and zooming elements",
-  "main": "lib/index.js",
+  "main": "lib/panAndZoomHoc.js",
   "scripts": {
     "build": "rimraf lib && babel src -d lib",
     "examples": "webpack-dev-server --config webpack.config.development.babel.js --content-base dist/ --hot --inline --host 0.0.0.0",

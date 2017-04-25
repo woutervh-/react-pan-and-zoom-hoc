@@ -50,8 +50,6 @@ export default WrappedComponent =>
             if (this.element) {
                 this.element.removeEventListener('wheel', this.handleWheel);
                 this.element.removeEventListener('mousedown', this.handleMouseDown);
-                this.element.removeEventListener('mousemove', this.handleMouseMove);
-                this.element.removeEventListener('mouseup', this.handleMouseUp);
                 this.element = null;
             }
 
@@ -59,8 +57,11 @@ export default WrappedComponent =>
                 this.element = ReactDOM.findDOMNode(ref);
                 this.element.addEventListener('wheel', this.handleWheel);
                 this.element.addEventListener('mousedown', this.handleMouseDown);
-                this.element.addEventListener('mousemove', this.handleMouseMove);
-                this.element.addEventListener('mouseup', this.handleMouseUp);
+            } else {
+                if (this.panning) {
+                    document.removeEventListener('mousemove', this.handleMouseMove);
+                    document.removeEventListener('mouseup', this.handleMouseUp);
+                }
             }
         }
 
@@ -68,9 +69,11 @@ export default WrappedComponent =>
             if (this.element) {
                 this.element.removeEventListener('wheel', this.handleWheel);
                 this.element.removeEventListener('mousedown', this.handleMouseDown);
-                this.element.removeEventListener('mousemove', this.handleMouseMove);
-                this.element.removeEventListener('mouseup', this.handleMouseUp);
                 this.element = null;
+            }
+            if (this.panning) {
+                document.removeEventListener('mousemove', this.handleMouseMove);
+                document.removeEventListener('mouseup', this.handleMouseUp);
             }
         }
 
@@ -116,6 +119,8 @@ export default WrappedComponent =>
                 this.panLastX = clientX;
                 this.panLastY = clientY;
                 this.panning = true;
+                document.addEventListener('mousemove', this.handleMouseMove);
+                document.addEventListener('mouseup', this.handleMouseUp);
 
                 if (onPanStart) {
                     onPanStart(event);
@@ -161,6 +166,8 @@ export default WrappedComponent =>
                 this.dx -= sdx;
                 this.dy -= sdy;
                 this.panning = false;
+                document.removeEventListener('mousemove', this.handleMouseMove);
+                document.removeEventListener('mouseup', this.handleMouseUp);
 
                 if (onPanEnd) {
                     onPanEnd(x + this.dx, y + this.dy, event);
