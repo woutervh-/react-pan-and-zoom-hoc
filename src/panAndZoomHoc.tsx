@@ -27,7 +27,7 @@ export interface PassedOnProps {
     scale?: number;
 }
 
-export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: React.ComponentClass<P>): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>> {
+export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: React.SFC<P> | React.ComponentClass<P> | string): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>> {
     return class PanAndZoomHOC extends React.Component<Overwrite<P, PanAndZoomHOCProps>, any> {
         static propTypes = {
             x: React.PropTypes.number,

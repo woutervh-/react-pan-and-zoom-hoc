@@ -31,4 +31,4 @@ export interface PassedOnProps {
     y?: number;
     scale?: number;
 }
-export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: React.ComponentClass<P>): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>>;
+export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: React.SFC<P> | React.ComponentClass<P> | string): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>>;
