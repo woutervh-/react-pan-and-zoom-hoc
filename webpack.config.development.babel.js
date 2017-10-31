@@ -11,12 +11,12 @@ export default {
     },
     module: {
         loaders: [
-            {test: /\.js$/, loader: 'babel'},
+            {test: /\.js$/, loader: 'babel'}
         ]
     },
     plugins: [
         new HtmlWebpackPlugin({
-            title: 'Repan-Rezoom examples'
+            title: 'react-pan-and-zoom-hoc examples'
         }),
     ]
 };

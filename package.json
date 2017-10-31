@@ -4,8 +4,8 @@
   "description": "React HOC that helps with panning and zooming elements",
   "main": "lib/panAndZoomHoc.js",
   "scripts": {
-    "build": "rimraf lib && babel src -d lib",
-    "examples": "webpack-dev-server --config webpack.config.development.babel.js --content-base dist/ --hot --inline --host 0.0.0.0",
+    "build": "rimraf lib && tsc",
+    "examples": "webpack-dev-server --config webpack.config.development.babel.js --content-base dist/ --hot --inline --host 0.0.0.0 --port 8888",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,6 +23,9 @@
     "react-dom": "^15.4.0"
   },
   "devDependencies": {
+    "@types/react": "^15.4.0",
+    "@types/react-dom": "^15.4.0",
+    "awesome-typescript-loader": "^3.2.3",
     "babel-cli": "^6.18.0",
     "babel-loader": "^6.2.7",
     "babel-plugin-transform-es2015-modules-umd": "^6.18.0",
@@ -31,6 +34,7 @@
     "babel-preset-stage-1": "^6.16.0",
     "html-webpack-plugin": "^2.24.1",
     "rimraf": "^2.5.4",
+    "typescript": "^2.5.3",
     "webpack": "^1.13.3",
     "webpack-dev-server": "^1.16.2"
   }
