@@ -3,6 +3,7 @@
   "version": "1.1.0",
   "description": "React HOC that helps with panning and zooming elements",
   "main": "lib/panAndZoomHoc.js",
+  "types": "lib/panAndZoomHoc.d.ts",
   "scripts": {
     "build": "rimraf lib && tsc",
     "examples": "webpack-dev-server --config webpack.config.development.babel.js --content-base dist/ --hot --inline --host 0.0.0.0 --port 8888",
