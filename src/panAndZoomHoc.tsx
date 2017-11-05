@@ -7,10 +7,6 @@ export type Omit<T, K extends keyof T> = {[P in Diff<keyof T, K>]: T[P]};
 export type Overwrite<T, U> = Pick<T, keyof Omit<T & U, keyof U>> & U;
 
 export interface PanAndZoomHOCProps {
-    id?: string;
-    className?: string;
-    styleName?: string;
-    style?: React.CSSProperties;
     x?: number;
     y?: number;
     scale?: number;
@@ -24,6 +20,7 @@ export interface PanAndZoomHOCProps {
     onPanEnd?: (x: number, y: number, event: MouseEvent) => void;
     onZoom?: (x: number | undefined, y: number | undefined, scale: number | undefined, event: WheelEvent) => void;
     onPanAndZoom?: (x: number, y: number, scale: number, event: WheelEvent) => void;
+    [id: string]: any;
 }
 
 export interface PassedOnProps {
@@ -35,10 +32,6 @@ export interface PassedOnProps {
 export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: React.SFC<P> | React.ComponentClass<P> | string): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>> {
     return class PanAndZoomHOC extends React.PureComponent<Overwrite<P, PanAndZoomHOCProps>, any> {
         static propTypes = {
-            id: PropTypes.string,
-            className: PropTypes.string,
-            styleName: PropTypes.string,
-            style: PropTypes.object,
             x: PropTypes.number,
             y: PropTypes.number,
             scale: PropTypes.number,
