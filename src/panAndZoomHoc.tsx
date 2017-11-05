@@ -198,6 +198,12 @@ export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: Re
             }
         };
 
+        handleTouchEnd = (event: React.SyntheticEvent<HTMLElement>) => {
+            if (this.panning && event.currentTarget) {
+                this.panning = false;
+            }
+        };
+
         normalizeTouchPosition(event: any, parent: HTMLElement) {
             const position = {} as {clientX: number, clientY: number};
 
@@ -231,9 +237,9 @@ export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: Re
                       onMouseDown={this.handleMouseDown}
                       onMouseMove={this.handleMouseMove}
                       onMouseUp={this.handleMouseUp}
-                      //onTouchStart={this.handleMouseDown}
-                      //onTouchMove={this.handleMouseMove}
-                      //onTouchEnd={this.handleTouchEnd}
+                      onTouchStart={this.handleMouseDown}
+                      onTouchMove={this.handleMouseMove}
+                      onTouchEnd={this.handleTouchEnd}
                       onWheel={this.handleWheel}
                     >
                         {children}
