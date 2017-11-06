@@ -31,7 +31,7 @@ export interface WithElement {
     getElement: () => Element | null;
 }
 
-export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: React.SFC<P> | React.ComponentClass<P> | string) {
+export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.ComponentClass<P> | string) {
     return class PanAndZoomHOC extends React.Component<Overwrite<P, PanAndZoomHOCProps>, any> implements WithElement {
         static propTypes = {
             x: React.PropTypes.number,
