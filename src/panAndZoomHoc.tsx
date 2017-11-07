@@ -1,3 +1,4 @@
+import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
@@ -17,8 +18,9 @@ export interface PanAndZoomHOCProps {
     onPanStart?: (event: MouseEvent) => void;
     onPanMove?: (x: number, y: number, event: MouseEvent) => void;
     onPanEnd?: (x: number, y: number, event: MouseEvent) => void;
-    onZoom?: any;
+    onZoom?: (x: number | undefined, y: number | undefined, scale: number | undefined, event: WheelEvent) => void;
     onPanAndZoom?: (x: number, y: number, scale: number, event: WheelEvent) => void;
+    [id: string]: any;
 }
 
 export interface PassedOnProps {
@@ -31,22 +33,22 @@ export interface WithElement {
     getElement: () => Element | null;
 }
 
-export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.ComponentClass<P> | string) {
-    return class PanAndZoomHOC extends React.Component<Overwrite<P, PanAndZoomHOCProps>, any> implements WithElement {
+export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: React.SFC<P> | React.ComponentClass<P> | string): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>> {
+    return class PanAndZoomHOC extends React.PureComponent<Overwrite<P, PanAndZoomHOCProps>, any> implements WithElement {
         static propTypes = {
-            x: React.PropTypes.number,
-            y: React.PropTypes.number,
-            scale: React.PropTypes.number,
-            scaleFactor: React.PropTypes.number,
-            minScale: React.PropTypes.number,
-            maxScale: React.PropTypes.number,
-            renderOnChange: React.PropTypes.bool,
-            passOnProps: React.PropTypes.bool,
-            onPanStart: React.PropTypes.func,
-            onPanMove: React.PropTypes.func,
-            onPanEnd: React.PropTypes.func,
-            onZoom: React.PropTypes.func,
-            onPanAndZoom: React.PropTypes.func
+            x: PropTypes.number,
+            y: PropTypes.number,
+            scale: PropTypes.number,
+            scaleFactor: PropTypes.number,
+            minScale: PropTypes.number,
+            maxScale: PropTypes.number,
+            renderOnChange: PropTypes.bool,
+            passOnProps: PropTypes.bool,
+            onPanStart: PropTypes.func,
+            onPanMove: PropTypes.func,
+            onPanEnd: PropTypes.func,
+            onZoom: PropTypes.func,
+            onPanAndZoom: PropTypes.func
         };
 
         static defaultProps = {
@@ -63,7 +65,6 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
         dx: number = 0;
         dy: number = 0;
         ds: number = 0;
-
         element: Element | null = null;
 
         componentWillReceiveProps(nextProps: PanAndZoomHOCProps) {
@@ -76,35 +77,14 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
             }
         }
 
-        handleRef(ref: React.ReactInstance | null) {
-            if (this.element) {
-                this.element.removeEventListener('wheel', this.handleWheel);
-                this.element.removeEventListener('mousedown', this.handleMouseDown);
-                this.element = null;
-            }
-
+        handleRef = (ref: React.ReactInstance | null) => {
             if (ref) {
-                const element = ReactDOM.findDOMNode(ref);
-                element.addEventListener('wheel', this.handleWheel);
-                element.addEventListener('mousedown', this.handleMouseDown);
-                this.element = element;
+                this.element = ReactDOM.findDOMNode(ref);
             }
-        }
-
-        componentWillUnmount() {
-            if (this.element) {
-                this.element.removeEventListener('wheel', this.handleWheel);
-                this.element.removeEventListener('mousedown', this.handleMouseDown);
-                this.element = null;
-            }
-            if (this.panning) {
-                document.removeEventListener('mousemove', this.handleMouseMove);
-                document.removeEventListener('mouseup', this.handleMouseUp);
-            }
-        }
+        };
 
         handleWheel = (event: WheelEvent) => {
-            const {onPanAndZoom, renderOnChange} = this.props;
+            const {onPanAndZoom, renderOnChange, onZoom} = this.props;
             const x: number | undefined = this.props.x;
             const y: number | undefined = this.props.y;
             const scale: number | undefined = this.props.scale;
@@ -117,8 +97,9 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
                 const newScale = deltaY < 0 ? Math.min((scale + this.ds) * scaleFactor, maxScale) : Math.max((scale + this.ds) / scaleFactor, minScale);
                 const factor = newScale / (scale + this.ds);
 
-                if (this.element !== null && factor !== 1) {
-                    const {top, left, width, height} = this.element.getBoundingClientRect();
+                if (event.currentTarget && factor !== 1) {
+                    const target = event.currentTarget as Element;
+                    const {top, left, width, height} = target.getBoundingClientRect();
                     const ex = clientX - left;
                     const ey = clientY - top;
                     const dx = (ex / width - 0.5) / (scale + this.ds);
@@ -140,6 +121,10 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
                 }
             }
 
+            if (onZoom) {
+              onZoom(x, y, scale, event);
+            }
+
             event.preventDefault();
         };
 
@@ -150,12 +135,10 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
         handleMouseDown = (event: MouseEvent) => {
             if (!this.panning) {
                 const {onPanStart} = this.props;
-                const {clientX, clientY} = event;
+                const {clientX, clientY} = this.normalizeTouchPosition(event, event.currentTarget as HTMLElement);
                 this.panLastX = clientX;
                 this.panLastY = clientY;
                 this.panning = true;
-                document.addEventListener('mousemove', this.handleMouseMove);
-                document.addEventListener('mouseup', this.handleMouseUp);
 
                 if (onPanStart) {
                     onPanStart(event);
@@ -164,15 +147,16 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
         };
 
         handleMouseMove = (event: MouseEvent) => {
-            if (this.panning && this.element) {
+            if (this.panning && event.currentTarget) {
                 const {onPanMove, renderOnChange} = this.props;
                 const x: number | undefined = this.props.x;
                 const y: number | undefined = this.props.y;
                 const scale: number | undefined = this.props.scale;
 
                 if (x !== undefined && y !== undefined && scale !== undefined) {
-                    const {clientX, clientY} = event;
-                    const {width, height} = this.element.getBoundingClientRect();
+                    const {clientX, clientY} = this.normalizeTouchPosition(event, event.currentTarget as HTMLElement);
+                    const target = event.currentTarget as Element;
+                    const {width, height} = target.getBoundingClientRect();
                     const dx = clientX - this.panLastX;
                     const dy = clientY - this.panLastY;
                     this.panLastX = clientX;
@@ -183,7 +167,7 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
                     this.dy -= sdy;
 
                     if (onPanMove) {
-                        onPanMove(x + this.dx, y + this.dy, event);
+                        onPanMove(x - this.dx, y - this.dy, event);
                     }
 
                     if (renderOnChange) {
@@ -194,15 +178,16 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
         };
 
         handleMouseUp = (event: MouseEvent) => {
-            if (this.panning && this.element) {
+            if (this.panning && event.currentTarget) {
                 const {onPanEnd, renderOnChange} = this.props;
                 const x: number | undefined = this.props.x;
                 const y: number | undefined = this.props.y;
                 const scale: number | undefined = this.props.scale;
 
                 if (x !== undefined && y !== undefined && scale !== undefined) {
-                    const {clientX, clientY} = event;
-                    const {width, height} = this.element.getBoundingClientRect();
+                    const {clientX, clientY} = this.normalizeTouchPosition(event, event.currentTarget as HTMLElement);
+                    const target = event.currentTarget as Element;
+                    const {width, height} = target.getBoundingClientRect();
                     const dx = clientX - this.panLastX;
                     const dy = clientY - this.panLastY;
                     this.panLastX = clientX;
@@ -212,8 +197,6 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
                     this.dx -= sdx;
                     this.dy -= sdy;
                     this.panning = false;
-                    document.removeEventListener('mousemove', this.handleMouseMove);
-                    document.removeEventListener('mouseup', this.handleMouseUp);
 
                     if (onPanEnd) {
                         onPanEnd(x + this.dx, y + this.dy, event);
@@ -230,6 +213,28 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
             return this.element;
         }
 
+        handleTouchEnd = (event: React.SyntheticEvent<HTMLElement>) => {
+            if (this.panning && event.currentTarget) {
+                this.panning = false;
+            }
+        };
+
+        normalizeTouchPosition(event: any, parent: HTMLElement) {
+            const position = {} as {clientX: number, clientY: number};
+
+            position.clientX = (event.targetTouches) ? event.targetTouches[0].pageX : event.clientX;
+            position.clientY = (event.targetTouches) ? event.targetTouches[0].pageY : event.clientY;
+
+            while (parent.offsetParent) {
+                position.clientX -= parent.offsetLeft - parent.scrollLeft;
+                position.clientY -= parent.offsetTop - parent.scrollTop;
+
+                parent = parent.offsetParent as HTMLElement;
+            }
+
+            return position;
+        }
+
         render() {
             const {children, scaleFactor, x: tempX, y: tempY, scale: tempScale, minScale, maxScale, onPanStart, onPanMove, onPanEnd, onZoom, onPanAndZoom, renderOnChange, passOnProps, ...other} = this.props;
             const x: number | undefined = this.props.x;
@@ -240,9 +245,22 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
                 const passedProps: PassedOnProps = passOnProps ? {x: x + this.dx, y: y + this.dy, scale: scale + this.ds} : {};
                 const AnyComponent = WrappedComponent as React.ComponentClass<any>;
 
-                return <AnyComponent ref={(ref: React.ReactInstance | null) => this.handleRef(ref)} {...passedProps} {...other}>
-                    {children}
-                </AnyComponent>;
+                return (
+                    <WrappedComponent
+                      {...passedProps}
+                      {...other}
+                      ref={this.handleRef}
+                      onMouseDown={this.handleMouseDown}
+                      onMouseMove={this.handleMouseMove}
+                      onMouseUp={this.handleMouseUp}
+                      onTouchStart={this.handleMouseDown}
+                      onTouchMove={this.handleMouseMove}
+                      onTouchEnd={this.handleTouchEnd}
+                      onWheel={this.handleWheel}
+                    >
+                        {children}
+                    </WrappedComponent>
+                );
             } else {
                 return null;
             }
