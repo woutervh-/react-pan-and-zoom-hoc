@@ -14,8 +14,7 @@ npm install --save react-pan-and-zoom-hoc
 
 **Browser**
 
-Include `lib/panAndZoomHoc.js` with a `<script>` tag.
-The component is exposed with the global `panAndZoomHoc`.
+Include `lib/panAndZoomHoc.js` with RequireJS.
 
 ## Options
 
