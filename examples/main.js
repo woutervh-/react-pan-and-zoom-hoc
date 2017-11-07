@@ -11,11 +11,11 @@ class App extends React.Component {
         scale: 1
     };
 
-    handlePanAndZoom(x, y, scale) {
+    handlePanAndZoom = (x, y, scale) => {
         this.setState({x, y, scale});
     }
 
-    handlePanMove(x, y) {
+    handlePanMove = (x, y) => {
         this.setState({x, y});
     }
 
@@ -26,13 +26,15 @@ class App extends React.Component {
             x={x}
             y={y}
             scale={scale}
-            scaleFactor={Math.sqrt(2)}
-            minScale={1}
-            maxScale={2 ** 18}
-            onPanAndZoom={(x, y, scale) => this.handlePanAndZoom(x, y, scale)} style={{width: 250, height: 250, border: '1px solid black', position: 'relative'}}
-            onPanMove={(x, y) => this.handlePanMove(x, y)}
+            scaleFactor={Math.sqrt(1.5)}
+            minScale={0.5}
+            maxScale={2}
+            onPanAndZoom={this.handlePanAndZoom}
+            style={{width: 498, height: 498, border: '1px solid black', position: 'relative'}}
+            onPanMove={this.handlePanMove}
         >
-            <div style={{position: 'absolute', top: `${y * 100}%`, left: `${x * 100}%`, width: 1, height: 1, backgroundColor: 'black'}}/>
+            <div style={{position: 'absolute', top: `${(y * 100) * scale}%`, left: `${(x * 100) * scale}%`, width: 50, height: 50, backgroundColor: 'black', transform: `scale(${scale})`, MozTransform: `scale(${scale})`}}/>
+            <div style={{position: 'absolute', top: `${(y * 100 + 50) * scale}%`, left: `${(x * 100 + 50) * scale}%`, width: 50, height: 50, backgroundColor: 'black', transform: `scale(${scale})`, MozTransform: `scale(${scale})`}}/>
         </InteractiveDiv>;
     }
 }

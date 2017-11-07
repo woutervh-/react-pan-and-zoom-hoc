@@ -2,7 +2,7 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "target": "es2015",
-    "module": "es2015",
+    "module": "UMD",
     "lib": [
       "es2015",
       "es2016",
