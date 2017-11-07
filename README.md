@@ -16,6 +16,14 @@ npm install --save react-pan-and-zoom-hoc
 
 Include `lib/panAndZoomHoc.js` with RequireJS.
 
+## Building
+
+```bash
+git clone https://github.com/woutervh-/react-pan-and-zoom-hoc.git
+npm install
+npm run build
+```
+
 ## Options
 
 * `x` (number, default: `0.5`): initial x-coordinate that represents the horizontal center of the viewport.
