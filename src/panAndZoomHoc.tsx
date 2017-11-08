@@ -77,12 +77,6 @@ export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: Re
             }
         }
 
-        handleRef = (ref: React.ReactInstance | null) => {
-            if (ref) {
-                this.element = ReactDOM.findDOMNode(ref);
-            }
-        };
-
         handleWheel = (event: WheelEvent) => {
             const {onPanAndZoom, renderOnChange, onZoom} = this.props;
             const x: number | undefined = this.props.x;
@@ -249,7 +243,6 @@ export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: Re
                     <WrappedComponent
                       {...passedProps}
                       {...other}
-                      ref={this.handleRef}
                       onMouseDown={this.handleMouseDown}
                       onMouseMove={this.handleMouseMove}
                       onMouseUp={this.handleMouseUp}

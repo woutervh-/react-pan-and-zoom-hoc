@@ -7,16 +7,16 @@ export default {
     },
     devtool: 'source-map',
     resolve: {
-        extensions: ['', '.js']
+        extensions: ['.js']
     },
     module: {
-        loaders: [
-            {test: /\.js$/, loader: 'babel'}
+        rules: [
+            {test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/}
         ]
     },
     plugins: [
         new HtmlWebpackPlugin({
             title: 'react-pan-and-zoom-hoc examples'
-        }),
+        })
     ]
 };
