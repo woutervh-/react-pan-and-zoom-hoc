@@ -29,12 +29,8 @@ export interface PassedOnProps {
     scale?: number;
 }
 
-export interface WithElement {
-    getElement: () => Element | null;
-}
-
 export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: React.SFC<P> | React.ComponentClass<P> | string): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>> {
-    return class PanAndZoomHOC extends React.PureComponent<Overwrite<P, PanAndZoomHOCProps>, any> implements WithElement {
+    return class PanAndZoomHOC extends React.PureComponent<Overwrite<P, PanAndZoomHOCProps>, any> {
         static propTypes = {
             x: PropTypes.number,
             y: PropTypes.number,
@@ -202,10 +198,6 @@ export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: Re
                 }
             }
         };
-
-        getElement() {
-            return this.element;
-        }
 
         handleTouchEnd = (event: React.SyntheticEvent<HTMLElement>) => {
             if (this.panning && event.currentTarget) {
