@@ -157,7 +157,7 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
                     this.dy -= sdy;
 
                     if (onPanMove) {
-                        onPanMove(x - this.dx, y - this.dy, event);
+                        onPanMove(x + this.dx, y + this.dy, event);
                     }
 
                     if (renderOnChange) {
