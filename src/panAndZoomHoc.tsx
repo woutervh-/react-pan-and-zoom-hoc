@@ -23,14 +23,14 @@ export interface PanAndZoomHOCProps {
     [id: string]: any;
 }
 
-export interface PassedOnProps {
+export interface PassedOnProps extends PanAndZoomHOCProps {
     x?: number;
     y?: number;
     scale?: number;
 }
 
-export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: React.SFC<P> | React.ComponentClass<P> | string): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>> {
-    return class PanAndZoomHOC extends React.PureComponent<Overwrite<P, PanAndZoomHOCProps>, any> {
+export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.ComponentClass<P> | string): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>> {
+    return class PanAndZoomHOC extends React.PureComponent<Overwrite<P, PassedOnProps>, any> {
         static propTypes = {
             x: PropTypes.number,
             y: PropTypes.number,
