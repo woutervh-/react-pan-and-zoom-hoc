@@ -29,12 +29,8 @@ export interface PassedOnProps {
     scale?: number;
 }
 
-export interface WithElement {
-    getElement: () => Element | null;
-}
-
 export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: React.SFC<P> | React.ComponentClass<P> | string): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>> {
-    return class PanAndZoomHOC extends React.PureComponent<Overwrite<P, PanAndZoomHOCProps>, any> implements WithElement {
+    return class PanAndZoomHOC extends React.PureComponent<Overwrite<P, PanAndZoomHOCProps>, any> {
         static propTypes = {
             x: PropTypes.number,
             y: PropTypes.number,
@@ -76,12 +72,6 @@ export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: Re
                 this.ds = 0;
             }
         }
-
-        handleRef = (ref: React.ReactInstance | null) => {
-            if (ref) {
-                this.element = ReactDOM.findDOMNode(ref);
-            }
-        };
 
         handleWheel = (event: WheelEvent) => {
             const {onPanAndZoom, renderOnChange, onZoom} = this.props;
@@ -209,10 +199,6 @@ export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: Re
             }
         };
 
-        getElement() {
-            return this.element;
-        }
-
         handleTouchEnd = (event: React.SyntheticEvent<HTMLElement>) => {
             if (this.panning && event.currentTarget) {
                 this.panning = false;
@@ -249,7 +235,6 @@ export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: Re
                     <WrappedComponent
                       {...passedProps}
                       {...other}
-                      ref={this.handleRef}
                       onMouseDown={this.handleMouseDown}
                       onMouseMove={this.handleMouseMove}
                       onMouseUp={this.handleMouseUp}
