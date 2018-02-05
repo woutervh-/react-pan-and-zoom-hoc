@@ -1,6 +1,6 @@
 {
   "name": "react-pan-and-zoom-hoc",
-  "version": "1.1.10",
+  "version": "1.1.11",
   "description": "React HOC that helps with panning and zooming elements",
   "main": "lib/panAndZoomHoc.js",
   "jsnext:main": "lib-esm/panAndZoomHoc.js",
