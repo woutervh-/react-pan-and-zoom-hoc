@@ -4,7 +4,7 @@ import * as ReactDOM from 'react-dom';
 
 export type Diff<T extends string, U extends string> = ({[P in T]: P} & {[P in U]: never} & {[x: string]: never})[T];
 export type Omit<T, K extends keyof T> = {[P in Diff<keyof T, K>]: T[P]};
-export type Overwrite<T, U> = Pick<T, Diff<keyof T & U, keyof U>> & U;
+export type Overwrite<T, U> = Pick<T, Diff<keyof T, keyof U>> & U;
 
 export interface PanAndZoomHOCProps {
     x?: number;
