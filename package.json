@@ -46,7 +46,7 @@
     "react": "^15.4.0",
     "react-dom": "^15.4.0",
     "rimraf": "^2.5.4",
-    "typescript": "^2.5.3",
+    "typescript": "^2.7.1",
     "webpack": "^3.8.1",
     "webpack-dev-server": "^2.9.2"
   }
