@@ -34,6 +34,7 @@ npm run build
 * `maxScale` (number, default: `Number.POSITIVE_INFINITY`): maximal allowed value for the scale.
 * `renderOnChange` (boolean, default: `false`): if `true`, when panning or zooming, it will force a re-render of the component.
 * `passOnProps` (boolean, default: `false`): if `true`, will pass on the `x`, `y`, and `scale` props to the wrapped component. If `renderOnChange` is also set to `true` this will cause the props (with updated values) to be passed on every time a pan or zoom event occurs.
+* `ignorePanOutside` (boolean, default: `false`): if `true`, when the mouse exits the element the panning will stop. When the mouse re-enters the element, and the mouse button is still down, then panning will resume.
 * `onPanStart` (function): invoked when the component starts to pan. Receives the following arguments:
     * `event` (MouseEvent): original event which triggered the panning to start.
 * `onPanMove` (function): invoked when the component pans in the x or y direction. Receives the following arguments:
