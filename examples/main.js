@@ -12,15 +12,15 @@ class App extends React.Component {
     };
 
     handlePanAndZoom = (x, y, scale) => {
-        this.setState({x, y, scale});
+        this.setState({ x, y, scale });
     }
 
     handlePanMove = (x, y) => {
-        this.setState({x, y});
+        this.setState({ x, y });
     }
 
     render() {
-        const {x, y, scale} = this.state;
+        const { x, y, scale } = this.state;
 
         return <InteractiveDiv
             x={x}
@@ -30,11 +30,12 @@ class App extends React.Component {
             minScale={0.5}
             maxScale={2}
             onPanAndZoom={this.handlePanAndZoom}
-            style={{width: 498, height: 498, border: '1px solid black', position: 'relative'}}
+            ignorePanOutside
+            style={{ width: 498, height: 498, border: '1px solid black', position: 'relative' }}
             onPanMove={this.handlePanMove}
         >
-            <div style={{position: 'absolute', top: `${(y * 100) * scale}%`, left: `${(x * 100) * scale}%`, width: 50, height: 50, backgroundColor: 'black', transform: `scale(${scale})`, MozTransform: `scale(${scale})`}}/>
-            <div style={{position: 'absolute', top: `${(y * 100 + 50) * scale}%`, left: `${(x * 100 + 50) * scale}%`, width: 50, height: 50, backgroundColor: 'black', transform: `scale(${scale})`, MozTransform: `scale(${scale})`}}/>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, backgroundColor: 'black', transform: `translate(-25px, -25px) scale(${scale}) translate(${x * 500}px, ${y * 500}px)` }} />
+            <div style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, backgroundColor: 'black', transform: `translate(-25px, -25px) scale(${scale}) translate(${x * 500 + 50}px, ${y * 500 + 50}px)` }} />
         </InteractiveDiv>;
     }
 }
@@ -42,4 +43,4 @@ class App extends React.Component {
 const container = document.createElement('div');
 document.body.appendChild(container);
 
-ReactDOM.render(<App/>, container);
+ReactDOM.render(<App />, container);
