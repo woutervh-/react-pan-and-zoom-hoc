@@ -101,13 +101,13 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
                     const target = ReactDOM.findDOMNode(this);
                     const { top, left, width, height } = target.getBoundingClientRect();
                     const { clientX, clientY } = this.normalizeTouchPosition(event, target as HTMLElement);
-                    const dx = clientX / width / (scale + this.ds);
-                    const dy = clientY / height / (scale + this.ds);
+                    const dx = (clientX / width - 0.5) / (scale + this.ds);
+                    const dy = (clientY / height - 0.5) / (scale + this.ds);
                     const sdx = dx * (1 - 1 / factor);
                     const sdy = dy * (1 - 1 / factor);
 
-                    this.dx -= sdx;
-                    this.dy -= sdy;
+                    this.dx += sdx;
+                    this.dy += sdy;
                     this.ds = newScale - scale;
 
                     if (onPanAndZoom) {
@@ -169,8 +169,8 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
                         this.panLastY = clientY;
                         const sdx = dx / (width * (scale + this.ds));
                         const sdy = dy / (height * (scale + this.ds));
-                        this.dx += sdx;
-                        this.dy += sdy;
+                        this.dx -= sdx;
+                        this.dy -= sdy;
 
                         if (onPanMove) {
                             onPanMove(x + this.dx, y + this.dy, event);
@@ -209,8 +209,8 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
                             this.panLastY = clientY;
                             const sdx = dx / (width * (scale + this.ds));
                             const sdy = dy / (height * (scale + this.ds));
-                            this.dx += sdx;
-                            this.dy += sdy;
+                            this.dx -= sdx;
+                            this.dy -= sdy;
                         }
                     } catch (error) {
                         // Happens when touches are used

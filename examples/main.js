@@ -19,23 +19,38 @@ class App extends React.Component {
         this.setState({ x, y });
     }
 
+    transformPoint({ x, y }) {
+        return {
+            x: 0.5 + this.state.scale * (x - this.state.x),
+            y: 0.5 + this.state.scale * (y - this.state.y)
+        };
+    }
+
     render() {
         const { x, y, scale } = this.state;
+
+        const p1 = this.transformPoint({x: 0.5, y: 0.5});
 
         return <InteractiveDiv
             x={x}
             y={y}
             scale={scale}
-            scaleFactor={Math.sqrt(1.5)}
+            scaleFactor={Math.sqrt(2)}
             minScale={0.5}
             maxScale={2}
             onPanAndZoom={this.handlePanAndZoom}
             ignorePanOutside
-            style={{ width: 498, height: 498, border: '1px solid black', position: 'relative' }}
+            style={{ width: 500, height: 500, boxSizing: 'border-box', border: '1px solid black', position: 'relative' }}
             onPanMove={this.handlePanMove}
         >
-            <div style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, backgroundColor: 'black', transform: `translate(-25px, -25px) scale(${scale}) translate(${x * 500}px, ${y * 500}px)` }} />
-            <div style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, backgroundColor: 'black', transform: `translate(-25px, -25px) scale(${scale}) translate(${x * 500 + 50}px, ${y * 500 + 50}px)` }} />
+            {/* Viewport */}
+            <div style={{ position: 'absolute', width: 500, height: 500, boxSizing: 'border-box', border: '1px dashed blue', transform: `translate(${(x - 0.5) * 500}px, ${(y - 0.5) * 500}px) scale(${1 / scale})` }} />
+            {/* Objects */}
+            <div style={{ position: 'absolute', width: 50 * this.state.scale, height: 50 * this.state.scale, backgroundColor: 'black', transform: `translate(${p1.x * 500}px, ${p1.y * 500}px) translate(${-25 * scale}px, ${-25 * scale}px)` }} />
+            <div style={{ position: 'absolute', width: 50 * this.state.scale, height: 50 * this.state.scale, backgroundColor: 'black', transform: `translate(${p1.x * 500}px, ${p1.y * 500}px) translate(${25 * scale}px, ${25 * scale}px)` }} />
+            {/* Axes */}
+            <div style={{ position: 'absolute', width: 1, height: 500, backgroundColor: 'red', transform: 'translateX(250px)' }} />
+            <div style={{ position: 'absolute', width: 500, height: 1, backgroundColor: 'red', transform: 'translateY(250px)' }} />
         </InteractiveDiv>;
     }
 }
