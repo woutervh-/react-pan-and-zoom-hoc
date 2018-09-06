@@ -2,9 +2,7 @@ import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
-export type Diff<T extends string, U extends string> = ({[P in T]: P} & {[P in U]: never} & { [x: string]: never })[T];
-export type Omit<T, K extends keyof T> = {[P in Diff<keyof T, K>]: T[P]};
-export type Overwrite<T, U> = Pick<T, Diff<keyof T, keyof U>> & U;
+export type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;
 
 export interface PanAndZoomHOCProps {
     x?: number;
@@ -23,14 +21,14 @@ export interface PanAndZoomHOCProps {
     onPanAndZoom?: (x: number, y: number, scale: number, event: WheelEvent) => void;
 }
 
-export interface PassedOnProps extends PanAndZoomHOCProps {
+export interface PassedOnProps {
     x?: number;
     y?: number;
     scale?: number;
 }
 
-export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.ComponentClass<P> | string): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>> {
-    return class PanAndZoomHOC extends React.PureComponent<Overwrite<P, PassedOnProps>, any> {
+export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: React.SFC<P> | React.ComponentClass<P> | string): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>> {
+    return class PanAndZoomHOC extends React.PureComponent<PanAndZoomHOCProps, never> {
         static propTypes = {
             x: PropTypes.number,
             y: PropTypes.number,
@@ -99,23 +97,25 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
 
                 if (factor !== 1) {
                     const target = ReactDOM.findDOMNode(this);
-                    const { top, left, width, height } = target.getBoundingClientRect();
-                    const { clientX, clientY } = this.normalizeTouchPosition(event, target as HTMLElement);
-                    const dx = (clientX / width - 0.5) / (scale + this.ds);
-                    const dy = (clientY / height - 0.5) / (scale + this.ds);
-                    const sdx = dx * (1 - 1 / factor);
-                    const sdy = dy * (1 - 1 / factor);
+                    if (target !== null && 'getBoundingClientRect' in target) {
+                        const { top, left, width, height } = target.getBoundingClientRect();
+                        const { clientX, clientY } = this.normalizeTouchPosition(event, target as HTMLElement);
+                        const dx = (clientX / width - 0.5) / (scale + this.ds);
+                        const dy = (clientY / height - 0.5) / (scale + this.ds);
+                        const sdx = dx * (1 - 1 / factor);
+                        const sdy = dy * (1 - 1 / factor);
 
-                    this.dx += sdx;
-                    this.dy += sdy;
-                    this.ds = newScale - scale;
+                        this.dx += sdx;
+                        this.dy += sdy;
+                        this.ds = newScale - scale;
 
-                    if (onPanAndZoom) {
-                        onPanAndZoom(x + this.dx, y + this.dy, scale + this.ds, event);
-                    }
+                        if (onPanAndZoom) {
+                            onPanAndZoom(x + this.dx, y + this.dy, scale + this.ds, event);
+                        }
 
-                    if (renderOnChange) {
-                        this.forceUpdate();
+                        if (renderOnChange) {
+                            this.forceUpdate();
+                        }
                     }
                 }
             }
@@ -134,18 +134,21 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
         handleMouseDown = (event: MouseEvent) => {
             if (!this.panning) {
                 const { onPanStart } = this.props;
-                const { clientX, clientY } = this.normalizeTouchPosition(event, ReactDOM.findDOMNode(this));
-                this.panLastX = clientX;
-                this.panLastY = clientY;
-                this.panning = true;
+                const target = ReactDOM.findDOMNode(this);
+                if (target !== null && 'getBoundingClientRect' in target) {
+                    const { clientX, clientY } = this.normalizeTouchPosition(event, target);
+                    this.panLastX = clientX;
+                    this.panLastY = clientY;
+                    this.panning = true;
 
-                document.addEventListener('mousemove', this.handleMouseMove);
-                document.addEventListener('mouseup', this.handleMouseUp);
-                document.addEventListener('touchmove', this.handleMouseMove);
-                document.addEventListener('touchend', this.handleMouseUp);
+                    document.addEventListener('mousemove', this.handleMouseMove);
+                    document.addEventListener('mouseup', this.handleMouseUp);
+                    document.addEventListener('touchmove', this.handleMouseMove);
+                    document.addEventListener('touchend', this.handleMouseUp);
 
-                if (onPanStart) {
-                    onPanStart(event);
+                    if (onPanStart) {
+                        onPanStart(event);
+                    }
                 }
             }
         };
@@ -159,25 +162,27 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
 
                 if (x !== undefined && y !== undefined && scale !== undefined) {
                     const target = ReactDOM.findDOMNode(this);
-                    const { clientX, clientY } = this.normalizeTouchPosition(event, target as HTMLElement);
-                    const { width, height } = target.getBoundingClientRect();
+                    if (target !== null && 'getBoundingClientRect' in target) {
+                        const { clientX, clientY } = this.normalizeTouchPosition(event, target);
+                        const { width, height } = target.getBoundingClientRect();
 
-                    if (!ignorePanOutside || 0 <= clientX && clientX <= width && 0 <= clientY && clientY <= height) {
-                        const dx = clientX - this.panLastX;
-                        const dy = clientY - this.panLastY;
-                        this.panLastX = clientX;
-                        this.panLastY = clientY;
-                        const sdx = dx / (width * (scale + this.ds));
-                        const sdy = dy / (height * (scale + this.ds));
-                        this.dx -= sdx;
-                        this.dy -= sdy;
+                        if (!ignorePanOutside || 0 <= clientX && clientX <= width && 0 <= clientY && clientY <= height) {
+                            const dx = clientX - this.panLastX;
+                            const dy = clientY - this.panLastY;
+                            this.panLastX = clientX;
+                            this.panLastY = clientY;
+                            const sdx = dx / (width * (scale + this.ds));
+                            const sdy = dy / (height * (scale + this.ds));
+                            this.dx -= sdx;
+                            this.dy -= sdy;
 
-                        if (onPanMove) {
-                            onPanMove(x + this.dx, y + this.dy, event);
-                        }
+                            if (onPanMove) {
+                                onPanMove(x + this.dx, y + this.dy, event);
+                            }
 
-                        if (renderOnChange) {
-                            this.forceUpdate();
+                            if (renderOnChange) {
+                                this.forceUpdate();
+                            }
                         }
                     }
                 }
@@ -198,22 +203,24 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
 
                 if (x !== undefined && y !== undefined && scale !== undefined) {
                     const target = ReactDOM.findDOMNode(this);
-                    try {
-                        const { clientX, clientY } = this.normalizeTouchPosition(event, target as HTMLElement);
-                        const { width, height } = target.getBoundingClientRect();
+                    if (target !== null && 'getBoundingClientRect' in target) {
+                        try {
+                            const { clientX, clientY } = this.normalizeTouchPosition(event, target);
+                            const { width, height } = target.getBoundingClientRect();
 
-                        if (!ignorePanOutside || 0 <= clientX && clientX <= width && 0 <= clientY && clientY <= height) {
-                            const dx = clientX - this.panLastX;
-                            const dy = clientY - this.panLastY;
-                            this.panLastX = clientX;
-                            this.panLastY = clientY;
-                            const sdx = dx / (width * (scale + this.ds));
-                            const sdy = dy / (height * (scale + this.ds));
-                            this.dx -= sdx;
-                            this.dy -= sdy;
+                            if (!ignorePanOutside || 0 <= clientX && clientX <= width && 0 <= clientY && clientY <= height) {
+                                const dx = clientX - this.panLastX;
+                                const dy = clientY - this.panLastY;
+                                this.panLastX = clientX;
+                                this.panLastY = clientY;
+                                const sdx = dx / (width * (scale + this.ds));
+                                const sdy = dy / (height * (scale + this.ds));
+                                this.dx -= sdx;
+                                this.dy -= sdy;
+                            }
+                        } catch (error) {
+                            // Happens when touches are used
                         }
-                    } catch (error) {
-                        // Happens when touches are used
                     }
 
                     this.panning = false;
@@ -229,17 +236,16 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
             }
         };
 
-        normalizeTouchPosition(event: MouseEvent | TouchEvent, parent: HTMLElement) {
+        normalizeTouchPosition(event: MouseEvent | TouchEvent, parent: Element) {
             const position = {
                 clientX: ('targetTouches' in event) ? event.targetTouches[0].pageX : event.clientX,
                 clientY: ('targetTouches' in event) ? event.targetTouches[0].pageY : event.clientY
             };
 
-            while (parent.offsetParent) {
-                position.clientX -= parent.offsetLeft - parent.scrollLeft;
-                position.clientY -= parent.offsetTop - parent.scrollTop;
-
-                parent = parent.offsetParent as HTMLElement;
+            while ((parent as HTMLElement).offsetParent) {
+                position.clientX -= (parent as HTMLElement).offsetLeft - parent.scrollLeft;
+                position.clientY -= (parent as HTMLElement).offsetTop - parent.scrollTop;
+                parent = (parent as HTMLElement).offsetParent;
             }
 
             return position;
@@ -253,7 +259,6 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
 
             if (x !== undefined && y !== undefined && scale !== undefined) {
                 const passedProps: PassedOnProps = passOnProps ? { x: x + this.dx, y: y + this.dy, scale: scale + this.ds } : {};
-                const AnyComponent = WrappedComponent as React.ComponentClass<any>;
 
                 return (
                     <WrappedComponent
@@ -270,5 +275,5 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
                 return null;
             }
         }
-    };
+    } as any as React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>>;
 };
