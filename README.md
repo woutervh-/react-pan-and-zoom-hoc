@@ -4,8 +4,6 @@ React HOC that helps with panning and zooming elements
 
 ## Installation
 
-Built as a UMD module.
-
 **Node**
 
 ```bash
