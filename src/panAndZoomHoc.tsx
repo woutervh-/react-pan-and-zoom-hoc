@@ -21,13 +21,7 @@ export interface PanAndZoomHOCProps {
     onPanAndZoom?: (x: number, y: number, scale: number, event: WheelEvent) => void;
 }
 
-export interface PassedOnProps {
-    x?: number;
-    y?: number;
-    scale?: number;
-}
-
-export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: React.SFC<P> | React.ComponentClass<P> | string): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>> {
+export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.ComponentClass<P> | string): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>> {
     return class PanAndZoomHOC extends React.PureComponent<PanAndZoomHOCProps, never> {
         static propTypes = {
             x: PropTypes.number,
@@ -258,7 +252,7 @@ export default function panAndZoom<P extends PassedOnProps>(WrappedComponent: Re
             const scale: number | undefined = this.props.scale;
 
             if (x !== undefined && y !== undefined && scale !== undefined) {
-                const passedProps: PassedOnProps = passOnProps ? { x: x + this.dx, y: y + this.dy, scale: scale + this.ds } : {};
+                const passedProps = passOnProps ? { x: x + this.dx, y: y + this.dy, scale: scale + this.ds } : {};
 
                 return (
                     <WrappedComponent
