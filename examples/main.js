@@ -45,6 +45,9 @@ class App extends React.Component {
         >
             {/* Viewport */}
             <div style={{ position: 'absolute', width: 500, height: 500, boxSizing: 'border-box', border: '1px dashed blue', transform: `translate(${(x - 0.5) * 500}px, ${(y - 0.5) * 500}px) scale(${1 / scale})` }} />
+            {/* Objects - original position and zoom */}
+            <div style={{ position: 'absolute', width: 50, height: 50, backgroundColor: 'lightgrey', transform: `translate(250px, 250px) translate(-25px, -25px)` }} />
+            <div style={{ position: 'absolute', width: 50, height: 50, backgroundColor: 'lightgrey', transform: `translate(250px, 250px) translate(25px, 25px)` }} />
             {/* Objects */}
             <div style={{ position: 'absolute', width: 50 * this.state.scale, height: 50 * this.state.scale, backgroundColor: 'black', transform: `translate(${p1.x * 500}px, ${p1.y * 500}px) translate(${-25 * scale}px, ${-25 * scale}px)` }} />
             <div style={{ position: 'absolute', width: 50 * this.state.scale, height: 50 * this.state.scale, backgroundColor: 'black', transform: `translate(${p1.x * 500}px, ${p1.y * 500}px) translate(${25 * scale}px, ${25 * scale}px)` }} />
