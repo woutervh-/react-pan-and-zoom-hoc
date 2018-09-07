@@ -22,6 +22,16 @@ npm install
 npm run build
 ```
 
+## Running example locally
+
+```bash
+git clone https://github.com/woutervh-/react-pan-and-zoom-hoc.git
+npm install
+npm run build
+npm run examples
+# Now you can open http://localhost:8888/ to view the example.
+```
+
 ## Options
 
 * `x` (number, default: `0.5`): initial x-coordinate that represents the horizontal center of the viewport.
