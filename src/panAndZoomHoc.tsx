@@ -14,6 +14,7 @@ export interface PanAndZoomHOCProps {
     renderOnChange?: boolean;
     passOnProps?: boolean;
     ignorePanOutside?: boolean;
+    disableScrollZoom?: boolean;
     onPanStart?: (event: MouseEvent | TouchEvent) => void;
     onPanMove?: (x: number, y: number, event: MouseEvent | TouchEvent) => void;
     onPanEnd?: (x: number, y: number, event: MouseEvent | TouchEvent) => void;
@@ -33,6 +34,7 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
             renderOnChange: PropTypes.bool,
             passOnProps: PropTypes.bool,
             ignorePanOutside: PropTypes.bool,
+            disableScrollZoom: PropTypes.bool,
             onPanStart: PropTypes.func,
             onPanMove: PropTypes.func,
             onPanEnd: PropTypes.func,
@@ -76,7 +78,12 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
         }
 
         handleWheel = (event: WheelEvent) => {
-            const { onPanAndZoom, renderOnChange, onZoom } = this.props;
+            const { onPanAndZoom, renderOnChange, disableScrollZoom, onZoom } = this.props;
+
+            if (disableScrollZoom) {
+                return;
+            }
+
             const x: number | undefined = this.props.x;
             const y: number | undefined = this.props.y;
             const scale: number | undefined = this.props.scale;
@@ -246,7 +253,7 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
         }
 
         render() {
-            const { children, scaleFactor, x: tempX, y: tempY, scale: tempScale, minScale, maxScale, onPanStart, onPanMove, onPanEnd, onZoom, onPanAndZoom, renderOnChange, passOnProps, ignorePanOutside, ...other } = this.props;
+            const { children, scaleFactor, x: tempX, y: tempY, scale: tempScale, minScale, maxScale, onPanStart, onPanMove, onPanEnd, onZoom, onPanAndZoom, renderOnChange, passOnProps, ignorePanOutside, disableScrollZoom, ...other } = this.props;
             const x: number | undefined = this.props.x;
             const y: number | undefined = this.props.y;
             const scale: number | undefined = this.props.scale;
