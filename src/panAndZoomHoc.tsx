@@ -68,11 +68,10 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
             }
         }
 
-        componentRef = React.createRef<HTMLElement>();
-
         componentDidMount() {
-            if (this.componentRef.current) {
-                this.componentRef.current.addEventListener('wheel', this.handleWheel);
+            const component = ReactDOM.findDOMNode(this);
+            if (component instanceof HTMLElement) {
+                component.addEventListener('wheel', this.handleWheel);
             }
         }
 
@@ -83,8 +82,9 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
                 document.removeEventListener('touchmove', this.handleMouseMove);
                 document.removeEventListener('touchend', this.handleMouseUp);
             }
-            if (this.componentRef.current) {
-                this.componentRef.current.removeEventListener('wheel', this.handleWheel);
+            const component = ReactDOM.findDOMNode(this);
+            if (component instanceof HTMLElement) {
+                component.removeEventListener('wheel', this.handleWheel);
             }
         }
 
@@ -276,7 +276,6 @@ export default function panAndZoom<P>(WrappedComponent: React.SFC<P> | React.Com
                     <WrappedComponent
                         {...passedProps}
                         {...other}
-                        ref={this.componentRef}
                         onMouseDown={this.handleMouseDown}
                         onTouchStart={this.handleMouseDown}
                     >
