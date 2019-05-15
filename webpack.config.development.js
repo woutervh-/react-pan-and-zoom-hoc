@@ -1,6 +1,6 @@
-import HtmlWebpackPlugin from 'html-webpack-plugin';
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-export default {
+module.exports = {
     entry: './examples/main.js',
     output: {
         filename: './dist/bundle.js',
