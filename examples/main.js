@@ -19,6 +19,8 @@ class App extends React.Component {
         this.setState({ x, y });
     }
 
+    handleZoomEnd = () => console.log('Zoom has ended.');
+
     transformPoint({ x, y }) {
         return {
             x: 0.5 + this.state.scale * (x - this.state.x),
@@ -42,6 +44,7 @@ class App extends React.Component {
             ignorePanOutside
             style={{ width: 500, height: 500, boxSizing: 'border-box', border: '1px solid black', position: 'relative' }}
             onPanMove={this.handlePanMove}
+            onZoomEnd={this.handleZoomEnd}
         >
             {/* Viewport */}
             <div style={{ position: 'absolute', width: 500, height: 500, boxSizing: 'border-box', border: '1px dashed blue', transform: `translate(${(x - 0.5) * 500}px, ${(y - 0.5) * 500}px) scale(${1 / scale})` }} />

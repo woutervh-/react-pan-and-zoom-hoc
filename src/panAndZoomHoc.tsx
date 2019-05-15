@@ -15,10 +15,12 @@ export interface PanAndZoomHOCProps {
     passOnProps?: boolean;
     ignorePanOutside?: boolean;
     disableScrollZoom?: boolean;
+    zoomEndTimeout?: number;
     onPanStart?: (event: MouseEvent | TouchEvent) => void;
     onPanMove?: (x: number, y: number, event: MouseEvent | TouchEvent) => void;
     onPanEnd?: (x: number, y: number, event: MouseEvent | TouchEvent) => void;
     onZoom?: (x: number | undefined, y: number | undefined, scale: number | undefined, event: WheelEvent) => void;
+    onZoomEnd?: () => void;
     onPanAndZoom?: (x: number, y: number, scale: number, event: WheelEvent) => void;
 }
 
@@ -35,10 +37,12 @@ export default function panAndZoom<P>(WrappedComponent: React.ElementType<P>): R
             passOnProps: PropTypes.bool,
             ignorePanOutside: PropTypes.bool,
             disableScrollZoom: PropTypes.bool,
+            zoomEndTimeout: PropTypes.number,
             onPanStart: PropTypes.func,
             onPanMove: PropTypes.func,
             onPanEnd: PropTypes.func,
             onZoom: PropTypes.func,
+            onZoomEnd: PropTypes.func,
             onPanAndZoom: PropTypes.func
         };
 
@@ -57,6 +61,7 @@ export default function panAndZoom<P>(WrappedComponent: React.ElementType<P>): R
         dy: number = 0;
         ds: number = 0;
         element: Element | null = null;
+        zoomTimeout: number | null = null;
 
         componentWillReceiveProps(nextProps: PanAndZoomHOCProps) {
             if (this.props.x !== nextProps.x || this.props.y !== nextProps.y) {
@@ -90,12 +95,14 @@ export default function panAndZoom<P>(WrappedComponent: React.ElementType<P>): R
                 component.removeEventListener('touchstart', this.handleMouseDown);
                 component.removeEventListener('wheel', this.handleWheel);
             }
+            if (this.zoomTimeout !== null) {
+                window.clearTimeout(this.zoomTimeout);
+                this.zoomTimeout = null;
+            }
         }
 
         handleWheel = (event: WheelEvent) => {
-            const { onPanAndZoom, renderOnChange, disableScrollZoom, onZoom } = this.props;
-
-            if (disableScrollZoom) {
+            if (this.props.disableScrollZoom) {
                 return;
             }
 
@@ -113,9 +120,9 @@ export default function panAndZoom<P>(WrappedComponent: React.ElementType<P>): R
 
                 if (factor !== 1) {
                     const target = ReactDOM.findDOMNode(this);
-                    if (target !== null && 'getBoundingClientRect' in target) {
+                    if (target !== null && target instanceof HTMLElement) {
                         const { top, left, width, height } = target.getBoundingClientRect();
-                        const { clientX, clientY } = this.normalizeTouchPosition(event, target as HTMLElement);
+                        const { clientX, clientY } = this.normalizeTouchPosition(event, target);
                         const dx = (clientX / width - 0.5) / (scale + this.ds);
                         const dy = (clientY / height - 0.5) / (scale + this.ds);
                         const sdx = dx * (1 - 1 / factor);
@@ -125,19 +132,26 @@ export default function panAndZoom<P>(WrappedComponent: React.ElementType<P>): R
                         this.dy += sdy;
                         this.ds = newScale - scale;
 
-                        if (onPanAndZoom) {
-                            onPanAndZoom(x + this.dx, y + this.dy, scale + this.ds, event);
+                        if (this.props.onPanAndZoom) {
+                            this.props.onPanAndZoom(x + this.dx, y + this.dy, scale + this.ds, event);
                         }
 
-                        if (renderOnChange) {
+                        if (this.props.renderOnChange) {
                             this.forceUpdate();
                         }
                     }
                 }
             }
 
-            if (onZoom) {
-                onZoom(x, y, scale, event);
+            if (this.props.onZoom) {
+                this.props.onZoom(x, y, scale, event);
+            }
+            if (this.zoomTimeout !== null) {
+                window.clearTimeout(this.zoomTimeout);
+                this.zoomTimeout = null;
+            }
+            if (this.props.onZoomEnd) {
+                this.zoomTimeout = window.setTimeout(this.props.onZoomEnd, this.props.zoomEndTimeout === undefined ? 500 : this.props.zoomEndTimeout);
             }
 
             event.preventDefault();
@@ -259,8 +273,8 @@ export default function panAndZoom<P>(WrappedComponent: React.ElementType<P>): R
             };
 
             while (parent && parent.offsetParent && parent.offsetParent instanceof HTMLElement) {
-                position.clientX -= (parent as HTMLElement).offsetLeft - parent.scrollLeft;
-                position.clientY -= (parent as HTMLElement).offsetTop - parent.scrollTop;
+                position.clientX -= parent.offsetLeft - parent.scrollLeft;
+                position.clientY -= parent.offsetTop - parent.scrollTop;
                 parent = parent.offsetParent;
             }
 
@@ -268,7 +282,27 @@ export default function panAndZoom<P>(WrappedComponent: React.ElementType<P>): R
         }
 
         render() {
-            const { scaleFactor, x: tempX, y: tempY, scale: tempScale, minScale, maxScale, onPanStart, onPanMove, onPanEnd, onZoom, onPanAndZoom, renderOnChange, passOnProps, ignorePanOutside, disableScrollZoom, ...other } = this.props;
+            const {
+                scaleFactor,
+                x: tempX,
+                y: tempY,
+                scale: tempScale,
+                minScale,
+                maxScale,
+                onPanStart,
+                onPanMove,
+                onPanEnd,
+                onZoom,
+                onPanAndZoom,
+                renderOnChange,
+                passOnProps,
+                ignorePanOutside,
+                disableScrollZoom,
+                zoomEndTimeout,
+                onZoomEnd,
+                ...other
+            } = this.props;
+
             const x: number | undefined = this.props.x;
             const y: number | undefined = this.props.y;
             const scale: number | undefined = this.props.scale;
