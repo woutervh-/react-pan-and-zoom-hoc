@@ -282,8 +282,8 @@ export default function panAndZoom<P>(WrappedComponent: React.ElementType<P>): R
                     } else {
                         this.boxZoom = false;
 
-                        if (this.props.onBoxMove) {
-                            this.props.onBoxMove(this.boxX1, this.boxY1, clientX, clientY, event);
+                        if (this.props.onBoxEnd) {
+                            this.props.onBoxEnd(this.boxX1, this.boxY1, clientX, clientY, event);
                         }
                     }
                 }
