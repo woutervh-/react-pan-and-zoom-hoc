@@ -16,12 +16,16 @@ export interface PanAndZoomHOCProps {
     ignorePanOutside?: boolean;
     disableScrollZoom?: boolean;
     zoomEndTimeout?: number;
+    shiftBoxZoom?: boolean;
     onPanStart?: (event: MouseEvent | TouchEvent) => void;
     onPanMove?: (x: number, y: number, event: MouseEvent | TouchEvent) => void;
     onPanEnd?: (x: number, y: number, event: MouseEvent | TouchEvent) => void;
     onZoom?: (x: number | undefined, y: number | undefined, scale: number | undefined, event: WheelEvent) => void;
     onZoomEnd?: () => void;
     onPanAndZoom?: (x: number, y: number, scale: number, event: WheelEvent) => void;
+    onBoxStart?: (clientX: number, clientY: number, event: MouseEvent | TouchEvent) => void;
+    onBoxMove?: (clientX1: number, clientY1: number, clientX2: number, clientY2: number, event: MouseEvent | TouchEvent) => void;
+    onBoxEnd?: (clientX1: number, clientY1: number, clientX2: number, clientY2: number, event: MouseEvent | TouchEvent) => void;
 }
 
 export default function panAndZoom<P>(WrappedComponent: React.ElementType<P>): React.ComponentClass<Overwrite<P, PanAndZoomHOCProps>> {
@@ -83,7 +87,7 @@ export default function panAndZoom<P>(WrappedComponent: React.ElementType<P>): R
         }
 
         componentWillUnmount() {
-            if (this.panning) {
+            if (this.panning || this.boxZoom) {
                 document.removeEventListener('mousemove', this.handleMouseMove);
                 document.removeEventListener('mouseup', this.handleMouseUp);
                 document.removeEventListener('touchmove', this.handleMouseMove);
@@ -158,87 +162,58 @@ export default function panAndZoom<P>(WrappedComponent: React.ElementType<P>): R
         };
 
         panning = false;
+        boxZoom = false;
         panLastX = 0;
         panLastY = 0;
+        boxX1 = 0;
+        boxY1 = 0;
 
         handleMouseDown = (event: MouseEvent | TouchEvent) => {
-            if (!this.panning) {
-                const { onPanStart } = this.props;
+            if (!this.panning && !this.boxZoom) {
                 const target = ReactDOM.findDOMNode(this);
                 if (target !== null && target instanceof HTMLElement) {
                     const { clientX, clientY } = this.normalizeTouchPosition(event, target);
-                    this.panLastX = clientX;
-                    this.panLastY = clientY;
-                    this.panning = true;
+
+                    if (event.shiftKey && this.props.shiftBoxZoom) {
+                        this.boxX1 = clientX;
+                        this.boxY1 = clientY;
+                        this.boxZoom = true;
+
+                        if (this.props.onBoxStart) {
+                            this.props.onBoxStart(this.boxX1, this.boxY1, event);
+                        }
+                    } else {
+                        this.panLastX = clientX;
+                        this.panLastY = clientY;
+                        this.panning = true;
+
+                        if (this.props.onPanStart) {
+                            this.props.onPanStart(event);
+                        }
+                    }
 
                     document.addEventListener('mousemove', this.handleMouseMove);
                     document.addEventListener('mouseup', this.handleMouseUp);
                     document.addEventListener('touchmove', this.handleMouseMove);
                     document.addEventListener('touchend', this.handleMouseUp);
-
-                    if (onPanStart) {
-                        onPanStart(event);
-                    }
                 }
             }
         };
 
         handleMouseMove = (event: MouseEvent | TouchEvent) => {
-            if (this.panning) {
-                const { onPanMove, renderOnChange, ignorePanOutside } = this.props;
-                const x: number | undefined = this.props.x;
-                const y: number | undefined = this.props.y;
-                const scale: number | undefined = this.props.scale;
+            if (this.panning || this.boxZoom) {
+                const target = ReactDOM.findDOMNode(this);
+                if (target !== null && target instanceof HTMLElement) {
+                    const { clientX, clientY } = this.normalizeTouchPosition(event, target);
 
-                if (x !== undefined && y !== undefined && scale !== undefined) {
-                    const target = ReactDOM.findDOMNode(this);
-                    if (target !== null && target instanceof HTMLElement) {
-                        const { clientX, clientY } = this.normalizeTouchPosition(event, target);
+                    if (this.panning) {
+                        const x: number | undefined = this.props.x;
+                        const y: number | undefined = this.props.y;
+                        const scale: number | undefined = this.props.scale;
                         const { width, height } = target.getBoundingClientRect();
 
-                        if (!ignorePanOutside || 0 <= clientX && clientX <= width && 0 <= clientY && clientY <= height) {
-                            const dx = clientX - this.panLastX;
-                            const dy = clientY - this.panLastY;
-                            this.panLastX = clientX;
-                            this.panLastY = clientY;
-                            const sdx = dx / (width * (scale + this.ds));
-                            const sdy = dy / (height * (scale + this.ds));
-                            this.dx -= sdx;
-                            this.dy -= sdy;
-
-                            if (onPanMove) {
-                                onPanMove(x + this.dx, y + this.dy, event);
-                            }
-
-                            if (renderOnChange) {
-                                this.forceUpdate();
-                            }
-                        }
-                    }
-                }
-            }
-        };
-
-        handleMouseUp = (event: MouseEvent | TouchEvent) => {
-            if (this.panning) {
-                const { onPanEnd, renderOnChange, ignorePanOutside } = this.props;
-                const x: number | undefined = this.props.x;
-                const y: number | undefined = this.props.y;
-                const scale: number | undefined = this.props.scale;
-
-                document.removeEventListener('mousemove', this.handleMouseMove);
-                document.removeEventListener('mouseup', this.handleMouseUp);
-                document.removeEventListener('touchmove', this.handleMouseMove);
-                document.removeEventListener('touchend', this.handleMouseUp);
-
-                if (x !== undefined && y !== undefined && scale !== undefined) {
-                    const target = ReactDOM.findDOMNode(this);
-                    if (target !== null && target instanceof HTMLElement) {
-                        try {
-                            const { clientX, clientY } = this.normalizeTouchPosition(event, target);
-                            const { width, height } = target.getBoundingClientRect();
-
-                            if (!ignorePanOutside || 0 <= clientX && clientX <= width && 0 <= clientY && clientY <= height) {
+                        if (x !== undefined && y !== undefined && scale !== undefined) {
+                            if (!this.props.ignorePanOutside || 0 <= clientX && clientX <= width && 0 <= clientY && clientY <= height) {
                                 const dx = clientX - this.panLastX;
                                 const dy = clientY - this.panLastY;
                                 this.panLastX = clientX;
@@ -247,22 +222,76 @@ export default function panAndZoom<P>(WrappedComponent: React.ElementType<P>): R
                                 const sdy = dy / (height * (scale + this.ds));
                                 this.dx -= sdx;
                                 this.dy -= sdy;
+
+                                if (this.props.onPanMove) {
+                                    this.props.onPanMove(x + this.dx, y + this.dy, event);
+                                }
+
+                                if (this.props.renderOnChange) {
+                                    this.forceUpdate();
+                                }
                             }
-                        } catch (error) {
-                            // Happens when touches are used
+                        }
+                    } else {
+                        if (this.props.onBoxMove) {
+                            this.props.onBoxMove(this.boxX1, this.boxY1, clientX, clientY, event);
                         }
                     }
+                }
+            }
+        };
 
-                    this.panning = false;
+        handleMouseUp = (event: MouseEvent | TouchEvent) => {
+            if (this.panning || this.boxZoom) {
+                const target = ReactDOM.findDOMNode(this);
+                if (target !== null && target instanceof HTMLElement) {
+                    const { clientX, clientY } = this.normalizeTouchPosition(event, target);
+                    if (this.panning) {
+                        const x: number | undefined = this.props.x;
+                        const y: number | undefined = this.props.y;
+                        const scale: number | undefined = this.props.scale;
 
-                    if (onPanEnd) {
-                        onPanEnd(x + this.dx, y + this.dy, event);
-                    }
+                        if (x !== undefined && y !== undefined && scale !== undefined) {
+                            try {
+                                const { width, height } = target.getBoundingClientRect();
 
-                    if (renderOnChange) {
-                        this.forceUpdate();
+                                if (!this.props.ignorePanOutside || 0 <= clientX && clientX <= width && 0 <= clientY && clientY <= height) {
+                                    const dx = clientX - this.panLastX;
+                                    const dy = clientY - this.panLastY;
+                                    this.panLastX = clientX;
+                                    this.panLastY = clientY;
+                                    const sdx = dx / (width * (scale + this.ds));
+                                    const sdy = dy / (height * (scale + this.ds));
+                                    this.dx -= sdx;
+                                    this.dy -= sdy;
+                                }
+                            } catch (error) {
+                                // Happens when touches are used
+                            }
+
+                            this.panning = false;
+
+                            if (this.props.onPanEnd) {
+                                this.props.onPanEnd(x + this.dx, y + this.dy, event);
+                            }
+
+                            if (this.props.renderOnChange) {
+                                this.forceUpdate();
+                            }
+                        }
+                    } else {
+                        this.boxZoom = false;
+
+                        if (this.props.onBoxMove) {
+                            this.props.onBoxMove(this.boxX1, this.boxY1, clientX, clientY, event);
+                        }
                     }
                 }
+
+                document.removeEventListener('mousemove', this.handleMouseMove);
+                document.removeEventListener('mouseup', this.handleMouseUp);
+                document.removeEventListener('touchmove', this.handleMouseMove);
+                document.removeEventListener('touchend', this.handleMouseUp);
             }
         };
 
@@ -300,6 +329,10 @@ export default function panAndZoom<P>(WrappedComponent: React.ElementType<P>): R
                 disableScrollZoom,
                 zoomEndTimeout,
                 onZoomEnd,
+                shiftBoxZoom,
+                onBoxStart,
+                onBoxMove,
+                onBoxEnd,
                 ...other
             } = this.props;
 
