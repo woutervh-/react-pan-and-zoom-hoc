@@ -2,6 +2,8 @@
 
 React HOC that helps with panning and zooming elements
 
+![Example](https://user-images.githubusercontent.com/5159398/61330478-f89cf800-a81f-11e9-960e-f5ab56f86a4f.gif)
+
 ## Installation
 
 **Node**
