@@ -15,6 +15,7 @@ export interface PanAndZoomHOCProps {
     passOnProps?: boolean;
     ignorePanOutside?: boolean;
     disableScrollZoom?: boolean;
+    disableZoomToMouse?: boolean;
     zoomEndTimeout?: number;
     shiftBoxZoom?: boolean;
     onPanStart?: (event: MouseEvent | TouchEvent) => void;
@@ -41,6 +42,7 @@ export default function panAndZoom<P = any>(WrappedComponent: React.ElementType<
             passOnProps: PropTypes.bool,
             ignorePanOutside: PropTypes.bool,
             disableScrollZoom: PropTypes.bool,
+            disableZoomToMouse: PropTypes.bool,
             zoomEndTimeout: PropTypes.number,
             onPanStart: PropTypes.func,
             onPanMove: PropTypes.func,
@@ -127,8 +129,8 @@ export default function panAndZoom<P = any>(WrappedComponent: React.ElementType<
                     if (target !== null && target instanceof HTMLElement) {
                         const { top, left, width, height } = target.getBoundingClientRect();
                         const { clientX, clientY } = this.normalizeTouchPosition(event, target);
-                        const dx = (clientX / width - 0.5) / (scale + this.ds);
-                        const dy = (clientY / height - 0.5) / (scale + this.ds);
+                        const dx = this.props.disableZoomToMouse ? 0 : (clientX / width - 0.5) / (scale + this.ds);
+                        const dy = this.props.disableZoomToMouse ? 0 : (clientY / height - 0.5) / (scale + this.ds);
                         const sdx = dx * (1 - 1 / factor);
                         const sdy = dy * (1 - 1 / factor);
 
@@ -327,6 +329,7 @@ export default function panAndZoom<P = any>(WrappedComponent: React.ElementType<
                 passOnProps,
                 ignorePanOutside,
                 disableScrollZoom,
+                disableZoomToMouse,
                 zoomEndTimeout,
                 onZoomEnd,
                 shiftBoxZoom,

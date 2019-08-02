@@ -45,6 +45,7 @@ npm run examples
 * `renderOnChange` (boolean, default: `false`): if `true`, when panning or zooming, it will force a re-render of the component.
 * `passOnProps` (boolean, default: `false`): if `true`, will pass on the `x`, `y`, and `scale` props to the wrapped component. If `renderOnChange` is also set to `true` this will cause the props (with updated values) to be passed on every time a pan or zoom event occurs.
 * `ignorePanOutside` (boolean, default: `false`): if `true`, when the mouse exits the element the panning will stop. When the mouse re-enters the element, and the mouse button is still down, then panning will resume.
+* `disableZoomToMouse` (boolean, default: `false`): if `true`, the scroll wheel zooming will always scroll to the center regardless of the mouse position.
 * `disableScrollZoom` (boolean, default: `false`): if `true`, the scroll wheel zooming functionality will be disabled.
 * `zoomEndTimeout` (number, default: `500`): after the user has used the scroll wheel to pan/zoom, the component will wait `zoomEndTimeout` milliseconds and then fire `onZoomEnd`. If the user uses the scroll wheel before this time has passed, the timeout will reset.
 * `onPanStart` (function, optional): invoked when the component starts to pan. Receives the following arguments:
