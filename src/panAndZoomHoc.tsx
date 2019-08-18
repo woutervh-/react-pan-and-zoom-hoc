@@ -82,9 +82,9 @@ export default function panAndZoom<P = any>(WrappedComponent: React.ElementType<
         componentDidMount() {
             const component = ReactDOM.findDOMNode(this);
             if (component instanceof HTMLElement) {
-                component.addEventListener('mousedown', this.handleMouseDown);
-                component.addEventListener('touchstart', this.handleMouseDown);
-                component.addEventListener('wheel', this.handleWheel);
+                component.addEventListener('mousedown', this.handleMouseDown, { passive: false });
+                component.addEventListener('touchstart', this.handleMouseDown, { passive: false });
+                component.addEventListener('wheel', this.handleWheel, { passive: false });
             }
         }
 
@@ -108,7 +108,7 @@ export default function panAndZoom<P = any>(WrappedComponent: React.ElementType<
         }
 
         handleWheel = (event: WheelEvent) => {
-            if (this.props.disableScrollZoom) {
+            if (this.props.disableScrollZoom || !this.hasPosition(event)) {
                 return;
             }
 
@@ -171,7 +171,7 @@ export default function panAndZoom<P = any>(WrappedComponent: React.ElementType<
         boxY1 = 0;
 
         handleMouseDown = (event: MouseEvent | TouchEvent) => {
-            if (!this.panning && !this.boxZoom) {
+            if (!this.panning && !this.boxZoom && this.hasPosition(event)) {
                 const target = ReactDOM.findDOMNode(this);
                 if (target !== null && target instanceof HTMLElement) {
                     const { clientX, clientY } = this.normalizeTouchPosition(event, target);
@@ -194,16 +194,16 @@ export default function panAndZoom<P = any>(WrappedComponent: React.ElementType<
                         }
                     }
 
-                    document.addEventListener('mousemove', this.handleMouseMove);
-                    document.addEventListener('mouseup', this.handleMouseUp);
-                    document.addEventListener('touchmove', this.handleMouseMove);
-                    document.addEventListener('touchend', this.handleMouseUp);
+                    document.addEventListener('mousemove', this.handleMouseMove, { passive: false });
+                    document.addEventListener('mouseup', this.handleMouseUp, { passive: false });
+                    document.addEventListener('touchmove', this.handleMouseMove, { passive: false });
+                    document.addEventListener('touchend', this.handleMouseUp, { passive: false });
                 }
             }
         };
 
         handleMouseMove = (event: MouseEvent | TouchEvent) => {
-            if (this.panning || this.boxZoom) {
+            if ((this.panning || this.boxZoom) && this.hasPosition(event)) {
                 const target = ReactDOM.findDOMNode(this);
                 if (target !== null && target instanceof HTMLElement) {
                     const { clientX, clientY } = this.normalizeTouchPosition(event, target);
@@ -244,7 +244,7 @@ export default function panAndZoom<P = any>(WrappedComponent: React.ElementType<
         };
 
         handleMouseUp = (event: MouseEvent | TouchEvent) => {
-            if (this.panning || this.boxZoom) {
+            if ((this.panning || this.boxZoom) && this.hasPosition(event)) {
                 const target = ReactDOM.findDOMNode(this);
                 if (target !== null && target instanceof HTMLElement) {
                     const { clientX, clientY } = this.normalizeTouchPosition(event, target);
@@ -296,6 +296,10 @@ export default function panAndZoom<P = any>(WrappedComponent: React.ElementType<
                 document.removeEventListener('touchend', this.handleMouseUp);
             }
         };
+
+        hasPosition(event: MouseEvent | TouchEvent) {
+            return !('targetTouches' in event) || event.targetTouches.length >= 1;
+        }
 
         normalizeTouchPosition(event: MouseEvent | TouchEvent, parent: HTMLElement | null) {
             const position = {
