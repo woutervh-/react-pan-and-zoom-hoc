@@ -80,27 +80,11 @@ export default function panAndZoom<P = any>(WrappedComponent: React.ElementType<
         }
 
         componentDidMount() {
-            const component = ReactDOM.findDOMNode(this);
-            if (component instanceof HTMLElement) {
-                component.addEventListener('mousedown', this.handleMouseDown, { passive: false });
-                component.addEventListener('touchstart', this.handleMouseDown, { passive: false });
-                component.addEventListener('wheel', this.handleWheel, { passive: false });
-            }
+            this.registerEventHandlers();
         }
 
         componentWillUnmount() {
-            if (this.panning || this.boxZoom) {
-                document.removeEventListener('mousemove', this.handleMouseMove);
-                document.removeEventListener('mouseup', this.handleMouseUp);
-                document.removeEventListener('touchmove', this.handleMouseMove);
-                document.removeEventListener('touchend', this.handleMouseUp);
-            }
-            const component = ReactDOM.findDOMNode(this);
-            if (component instanceof HTMLElement) {
-                component.removeEventListener('mousedown', this.handleMouseDown);
-                component.removeEventListener('touchstart', this.handleMouseDown);
-                component.removeEventListener('wheel', this.handleWheel);
-            }
+            this.unregisterEventHandlers();
             if (this.zoomTimeout !== null) {
                 window.clearTimeout(this.zoomTimeout);
                 this.zoomTimeout = null;
@@ -314,6 +298,41 @@ export default function panAndZoom<P = any>(WrappedComponent: React.ElementType<
             }
 
             return position;
+        }
+
+        unregisterEventHandlers() {
+            if (this.panning || this.boxZoom) {
+                document.removeEventListener('mousemove', this.handleMouseMove);
+                document.removeEventListener('mouseup', this.handleMouseUp);
+                document.removeEventListener('touchmove', this.handleMouseMove);
+                document.removeEventListener('touchend', this.handleMouseUp);
+            }
+            const component = ReactDOM.findDOMNode(this);
+            if (component instanceof HTMLElement) {
+                component.removeEventListener('mousedown', this.handleMouseDown);
+                component.removeEventListener('touchstart', this.handleMouseDown);
+                component.removeEventListener('wheel', this.handleWheel);
+            }
+        }
+
+        registerEventHandlers() {
+            const component = ReactDOM.findDOMNode(this);
+            if (component instanceof HTMLElement) {
+                component.addEventListener('mousedown', this.handleMouseDown, { passive: false });
+                component.addEventListener('touchstart', this.handleMouseDown, { passive: false });
+                component.addEventListener('wheel', this.handleWheel, { passive: false });
+            }
+            if (this.panning || this.boxZoom) {
+                document.addEventListener('mousemove', this.handleMouseMove, { passive: false });
+                document.addEventListener('mouseup', this.handleMouseUp, { passive: false });
+                document.addEventListener('touchmove', this.handleMouseMove, { passive: false });
+                document.addEventListener('touchend', this.handleMouseUp, { passive: false });
+            }
+        }
+
+        reregisterEventHandlers() {
+            this.unregisterEventHandlers();
+            this.registerEventHandlers();
         }
 
         render() {
