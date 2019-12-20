@@ -159,7 +159,6 @@ export default function panAndZoom<P = any>(WrappedComponent: React.ElementType<
                 const target = ReactDOM.findDOMNode(this);
                 if (target !== null && target instanceof HTMLElement) {
                     const { clientX, clientY } = this.normalizeTouchPosition(event, target);
-                    console.log(clientX, clientY);
 
                     if (event.shiftKey && this.props.shiftBoxZoom) {
                         this.boxX1 = clientX;
