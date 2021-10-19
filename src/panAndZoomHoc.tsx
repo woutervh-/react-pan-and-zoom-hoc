@@ -69,7 +69,7 @@ export default function panAndZoom<P = any>(WrappedComponent: React.ElementType<
         element: Element | null = null;
         zoomTimeout: number | null = null;
 
-        componentWillReceiveProps(nextProps: PanAndZoomHOCProps) {
+        componentDidUpdate(nextProps: PanAndZoomHOCProps) {
             if (this.props.x !== nextProps.x || this.props.y !== nextProps.y) {
                 this.dx = 0;
                 this.dy = 0;
